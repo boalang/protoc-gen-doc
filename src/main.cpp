@@ -327,26 +327,24 @@ static void addMessages(const gp::Descriptor *descriptor,
     bool excluded = false;
     QString description = descriptionOf(descriptor, excluded);
 
-    if (excluded) {
-        return;
+    if (!excluded) {
+        QVariantHash message;
+
+        // Add basic info.
+        message["message_name"] = QString::fromStdString(descriptor->name());
+        message["message_description"] = description;
+
+        // Add fields.
+        QVariantList fields;
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+            addField(descriptor->field(i), &fields);
+        }
+        std::sort(fields.begin(), fields.end(), &nameLessThan);
+        message["message_has_fields"] = !fields.isEmpty();
+        message["message_fields"] = fields;
+
+        messages->append(message);
     }
-
-    QVariantHash message;
-
-    // Add basic info.
-    message["message_name"] = QString::fromStdString(descriptor->name());
-    message["message_description"] = description;
-
-    // Add fields.
-    QVariantList fields;
-    for (int i = 0; i < descriptor->field_count(); ++i) {
-        addField(descriptor->field(i), &fields);
-    }
-    std::sort(fields.begin(), fields.end(), &nameLessThan);
-    message["message_has_fields"] = !fields.isEmpty();
-    message["message_fields"] = fields;
-
-    messages->append(message);
 
     // Add nested messages and enums.
     for (int i = 0; i < descriptor->nested_type_count(); ++i) {
