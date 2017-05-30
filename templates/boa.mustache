@@ -91,7 +91,7 @@
     {{#files}}
 
     {{#file_messages}}
-    <h3 id="{{message_full_name}}">{{message_long_name}}</h3>
+    <h3 id="{{message_name}}">{{message_name}}</h3>
     {{#p}}{{message_description}}{{/p}}
     {{#message_has_fields}}
     <table class="attribute-table">
@@ -103,7 +103,7 @@
         {{#field_description}}
         <tr>
           <td>{{field_name}}</td>
-          <td><a href="#{{field_type}}">{{field_type}}</a></td>
+          <td>{{{field_type}}}</td>
           <td>{{#p}}{{field_description}}{{/p}}</td>
         </tr>
         {{/field_description}}
@@ -114,7 +114,7 @@
     {{/file_messages}}
 
     {{#file_enums}}
-    <h3 id="enum+{{enum_name}}">{{enum_name}}</h3>
+    <h3 id="{{enum_name}}">enum {{enum_name}}</h3>
     {{#p}}{{enum_description}}{{/p}}
     <table class="enum-table">
       <thead>

@@ -57,54 +57,23 @@ public:
 static DocGeneratorContext generatorContext;
 
 /**
- * Returns the "long" name of the message, enum, or field described by
- * @p descriptor.
- *
- * The long name is the name of the message, field, or enum, preceeded
- * by the names of its enclosing types, separated by dots. E.g. for "Baz" it could
- * be "Foo.Bar.Baz".
- */
-template<typename T>
-static QString longName(const T *descriptor)
-{
-    if (!descriptor) {
-        return QString();
-    } else if (!descriptor->containing_type()) {
-        return QString::fromStdString(descriptor->name());
-    }
-    return longName(descriptor->containing_type()) + "." +
-                QString::fromStdString(descriptor->name());
-}
-
-/**
  * Returns true if the variant @p v1 is less than @p v2.
  *
  * It is assumed that both variants contain a QVariantHash with either
- * a "message_long_name" or a "message_long_name" key. This comparator is used
- * when sorting the message and enum lists for a file.
+ * a "field_name" or a "value_name" key. This comparator is used
+ * when sorting the field and enum value lists.
  */
-static inline bool longNameLessThan(const QVariant &v1, const QVariant &v2)
+static inline bool nameLessThan(const QVariant &v1, const QVariant &v2)
 {
-    if (v1.toHash()["message_long_name"].toString() < v2.toHash()["message_long_name"].toString())
+    if (v1.toHash()["field_name"].toString() < v2.toHash()["field_name"].toString())
         return true;
-    return v1.toHash()["enum_long_name"].toString() < v2.toHash()["enum_long_name"].toString();
-}
-
-static inline bool fieldNameLessThan(const QVariant &v1, const QVariant &v2)
-{
-    return v1.toHash()["field_name"].toString() < v2.toHash()["field_name"].toString();
-}
-
-static inline bool enumNameLessThan(const QVariant &v1, const QVariant &v2)
-{
     return v1.toHash()["value_name"].toString() < v2.toHash()["value_name"].toString();
 }
 
 /**
  * Returns the description of the item described by @p descriptor.
  *
- * The item can be a message, enum, enum value, field, service or
- * service method.
+ * The item can be a message, enum, enum value, or field.
  *
  * The description is taken as the leading comments followed by the trailing
  * comments. If present, a single space is removed from the start of each line.
@@ -225,100 +194,32 @@ static QString scalarTypeName(gp::FieldDescriptor::Type type)
 {
     switch (type) {
         case gp::FieldDescriptor::TYPE_BOOL:
-            return "bool";
+            return "<a href=\"/docs/types.php\">bool</a>";
         case gp::FieldDescriptor::TYPE_BYTES:
-            return "bytes";
-        case gp::FieldDescriptor::TYPE_DOUBLE:
-            return "double";
-        case gp::FieldDescriptor::TYPE_FIXED32:
-            return "fixed32";
-        case gp::FieldDescriptor::TYPE_FIXED64:
-            return "fixed64";
-        case gp::FieldDescriptor::TYPE_FLOAT:
-            return "float";
-        case gp::FieldDescriptor::TYPE_INT32:
-            return "int32";
-        case gp::FieldDescriptor::TYPE_INT64:
-            return "int64";
-        case gp::FieldDescriptor::TYPE_SFIXED32:
-            return "sfixed32";
-        case gp::FieldDescriptor::TYPE_SFIXED64:
-            return "sfixed64";
-        case gp::FieldDescriptor::TYPE_SINT32:
-            return "sint32";
-        case gp::FieldDescriptor::TYPE_SINT64:
-            return "sint64";
         case gp::FieldDescriptor::TYPE_STRING:
-            return "string";
+            return "<a href=\"/docs/types.php\">string</a>";
+        case gp::FieldDescriptor::TYPE_DOUBLE:
+        case gp::FieldDescriptor::TYPE_FLOAT:
+            return "<a href=\"/docs/types.php\">float</a>";
+        case gp::FieldDescriptor::TYPE_FIXED32:
+        case gp::FieldDescriptor::TYPE_FIXED64:
+        case gp::FieldDescriptor::TYPE_INT32:
+        case gp::FieldDescriptor::TYPE_INT64:
+        case gp::FieldDescriptor::TYPE_SFIXED32:
+        case gp::FieldDescriptor::TYPE_SFIXED64:
+        case gp::FieldDescriptor::TYPE_SINT32:
+        case gp::FieldDescriptor::TYPE_SINT64:
         case gp::FieldDescriptor::TYPE_UINT32:
-            return "uint32";
         case gp::FieldDescriptor::TYPE_UINT64:
-            return "uint64";
+            return "<a href=\"/docs/types.php\">int</a>";
         default:
             return "<unknown>";
     }
 }
 
-/**
- * Returns the name of the field label @p label.
- */
-static QString labelName(gp::FieldDescriptor::Label label)
+static QString typeUrl(QString type)
 {
-    switch(label) {
-        case gp::FieldDescriptor::LABEL_OPTIONAL:
-            return "optional";
-        case gp::FieldDescriptor::LABEL_REPEATED:
-            return "repeated";
-        case gp::FieldDescriptor::LABEL_REQUIRED:
-            return "required";
-        default:
-            return "<unknown>";
-    }
-}
-
-/**
- * Returns the default value for the field described by @p fieldDescriptor.
- *
- * The field must be of scalar or enum type. If the field has no default value,
- * QString() is returned.
- */
-static QString defaultValue(const gp::FieldDescriptor *fieldDescriptor)
-{
-    if (fieldDescriptor->has_default_value()) {
-        switch (fieldDescriptor->cpp_type()) {
-            case gp::FieldDescriptor::CPPTYPE_STRING: {
-                std::string value = fieldDescriptor->default_value_string();
-                if (fieldDescriptor->type() == gp::FieldDescriptor::TYPE_STRING) {
-                    return QString("\"%1\"").arg(QString::fromStdString(value));
-                } else if (fieldDescriptor->type() == gp::FieldDescriptor::TYPE_BYTES) {
-                    return QString("0x%1").arg(QString::fromUtf8(
-                                QByteArray(value.c_str()).toHex()));
-                } else {
-                    return "Unknown";
-                }
-            }
-            case gp::FieldDescriptor::CPPTYPE_BOOL:
-                return fieldDescriptor->default_value_bool() ? "true" : "false";
-            case gp::FieldDescriptor::CPPTYPE_FLOAT:
-                return QString::number(fieldDescriptor->default_value_float());
-            case gp::FieldDescriptor::CPPTYPE_DOUBLE:
-                return QString::number(fieldDescriptor->default_value_double());
-            case gp::FieldDescriptor::CPPTYPE_INT32:
-                return QString::number(fieldDescriptor->default_value_int32());
-            case gp::FieldDescriptor::CPPTYPE_INT64:
-                return QString::number(fieldDescriptor->default_value_int64());
-            case gp::FieldDescriptor::CPPTYPE_UINT32:
-                return QString::number(fieldDescriptor->default_value_uint32());
-            case gp::FieldDescriptor::CPPTYPE_UINT64:
-                return QString::number(fieldDescriptor->default_value_uint64());
-            case gp::FieldDescriptor::CPPTYPE_ENUM:
-                return QString::fromStdString(fieldDescriptor->default_value_enum()->name());
-            default:
-                return "Unknown";
-        }
-    } else {
-        return QString();
-    }
+    return "<a href=\"/docs/dsl-types.php#" + type + "\">" + type + "</a>";
 }
 
 /**
@@ -340,30 +241,33 @@ static void addField(const gp::FieldDescriptor *fieldDescriptor, QVariantList *f
     // Add basic info.
     field["field_name"] = QString::fromStdString(fieldDescriptor->name());
     field["field_description"] = description;
-    field["field_label"] = labelName(fieldDescriptor->label());
-    field["field_default_value"] = defaultValue(fieldDescriptor);
 
     // Add type information.
     gp::FieldDescriptor::Type type = fieldDescriptor->type();
+    QString fieldType;
     if (type == gp::FieldDescriptor::TYPE_MESSAGE || type == gp::FieldDescriptor::TYPE_GROUP) {
         // Field is of message / group type.
         const gp::Descriptor *descriptor = fieldDescriptor->message_type();
-        field["field_type"] = QString::fromStdString(descriptor->name());
-        field["field_long_type"] = longName(descriptor);
-        field["field_full_type"] = QString::fromStdString(descriptor->full_name());
+        fieldType = typeUrl(QString::fromStdString(descriptor->name()));
     } else if (type == gp::FieldDescriptor::TYPE_ENUM) {
         // Field is of enum type.
         const gp::EnumDescriptor *descriptor = fieldDescriptor->enum_type();
-        field["field_type"] = QString::fromStdString(descriptor->name());
-        field["field_long_type"] = longName(descriptor);
-        field["field_full_type"] = QString::fromStdString(descriptor->full_name());
+        fieldType = typeUrl(QString::fromStdString(descriptor->name()));
     } else {
         // Field is of scalar type.
         QString typeName(scalarTypeName(type));
-        field["field_type"] = typeName;
-        field["field_long_type"] = typeName;
-        field["field_full_type"] = typeName;
+        if (QString::fromStdString(fieldDescriptor->name()).indexOf("date") != -1)
+            fieldType = "<a href=\"/docs/types.php\">time</a>";
+        else
+            fieldType = typeName;
     }
+
+    if (fieldDescriptor->label() == gp::FieldDescriptor::LABEL_OPTIONAL)
+        fieldType += "?";
+    else if (fieldDescriptor->label() == gp::FieldDescriptor::LABEL_REPEATED)
+        fieldType = "<a href=\"/docs/types.php\">array</a> of " + fieldType;
+
+    field["field_type"] = fieldType;
 
     fields->append(field);
 }
@@ -384,8 +288,6 @@ static void addEnum(const gp::EnumDescriptor *enumDescriptor, QVariantList *enum
 
     // Add basic info.
     enum_["enum_name"] = QString::fromStdString(enumDescriptor->name());
-    enum_["enum_long_name"] = longName(enumDescriptor);
-    enum_["enum_full_name"] = QString::fromStdString(enumDescriptor->full_name());
     enum_["enum_description"] = description;
 
     // Add enum values.
@@ -406,7 +308,7 @@ static void addEnum(const gp::EnumDescriptor *enumDescriptor, QVariantList *enum
         value["value_description"] = description;
         values.append(value);
     }
-    std::sort(values.begin(), values.end(), &enumNameLessThan);
+    std::sort(values.begin(), values.end(), &nameLessThan);
     enum_["enum_values"] = values;
 
     enums->append(enum_);
@@ -433,8 +335,6 @@ static void addMessages(const gp::Descriptor *descriptor,
 
     // Add basic info.
     message["message_name"] = QString::fromStdString(descriptor->name());
-    message["message_long_name"] = longName(descriptor);
-    message["message_full_name"] = QString::fromStdString(descriptor->full_name());
     message["message_description"] = description;
 
     // Add fields.
@@ -442,7 +342,7 @@ static void addMessages(const gp::Descriptor *descriptor,
     for (int i = 0; i < descriptor->field_count(); ++i) {
         addField(descriptor->field(i), &fields);
     }
-    std::sort(fields.begin(), fields.end(), &fieldNameLessThan);
+    std::sort(fields.begin(), fields.end(), &nameLessThan);
     message["message_has_fields"] = !fields.isEmpty();
     message["message_fields"] = fields;
 
@@ -455,61 +355,6 @@ static void addMessages(const gp::Descriptor *descriptor,
     for (int i = 0; i < descriptor->enum_type_count(); ++i) {
         addEnum(descriptor->enum_type(i), enums);
     }
-}
-
-/**
- * Add services to variant list.
- *
- * Adds the service described by @p serviceDescriptor and all its methods to the
- * variant list @p services.
- */
-static void addService(const gp::ServiceDescriptor *serviceDescriptor, QVariantList *services)
-{
-    bool excluded = false;
-    QString description = descriptionOf(serviceDescriptor, excluded);
-    
-    if (excluded) {
-        return;
-    }
-    
-    QVariantHash service;
-    
-    // Add basic info.
-    service["service_name"] = QString::fromStdString(serviceDescriptor->name());
-    service["service_full_name"] = QString::fromStdString(serviceDescriptor->full_name());
-    service["service_description"] = description;
-    
-    // Add methods.
-    QVariantList methods;
-    for (int i = 0; i < serviceDescriptor->method_count(); ++i) {
-        const gp::MethodDescriptor *methodDescriptor = serviceDescriptor->method(i);
-        
-        bool excluded = false;
-        QString description = descriptionOf(methodDescriptor, excluded);
-        
-        if (excluded) {
-            continue;
-        }
-        
-        QVariantHash method;
-        method["method_name"] = QString::fromStdString(methodDescriptor->name());
-        method["method_description"] = description;
-        
-        // Add type for method input
-        method["method_request_type"] = QString::fromStdString(methodDescriptor->input_type()->name());
-        method["method_request_full_type"] = QString::fromStdString(methodDescriptor->input_type()->full_name());
-        method["method_request_long_type"] = longName(methodDescriptor->input_type());
-        
-        // Add type for method output
-        method["method_response_type"] = QString::fromStdString(methodDescriptor->output_type()->name());
-        method["method_response_full_type"] = QString::fromStdString(methodDescriptor->output_type()->full_name());
-        method["method_response_long_type"] = longName(methodDescriptor->output_type());
-        
-        methods.append(method);
-    }
-    service["service_methods"] = methods;
-    
-    services->append(service);
 }
 
 /**
@@ -537,29 +382,18 @@ static void addFile(const gp::FileDescriptor *fileDescriptor, QVariantList *file
 
     QVariantList messages;
     QVariantList enums;
-    QVariantList services;
 
     // Add messages.
     for (int i = 0; i < fileDescriptor->message_type_count(); ++i) {
         addMessages(fileDescriptor->message_type(i), &messages, &enums);
     }
-    std::sort(messages.begin(), messages.end(), &longNameLessThan);
     file["file_messages"] = messages;
 
     // Add enums.
     for (int i = 0; i < fileDescriptor->enum_type_count(); ++i) {
         addEnum(fileDescriptor->enum_type(i), &enums);
     }
-    std::sort(enums.begin(), enums.end(), &longNameLessThan);
     file["file_enums"] = enums;
-
-    // Add services.
-    for (int i = 0; i < fileDescriptor->service_count(); ++i) {
-        addService(fileDescriptor->service(i), &services);
-    }
-    std::sort(services.begin(), services.end(), &longNameLessThan);
-    file["file_has_services"] = !services.isEmpty();
-    file["file_services"] = services;
 
     files->append(file);
 }
