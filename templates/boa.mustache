@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Boa Domain Specific Types</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu:400,700,400italic"/>
+    <style>
+      body {
+        width: 60em;
+        margin: 1em auto;
+        color: #222;
+        font-family: "Ubuntu", sans-serif;
+        padding-bottom: 4em;
+      }
+
+      h1 {
+        font-weight: normal;
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 0.5ex;
+      }
+
+      h2 {
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 0.5ex;
+        margin: 1.5em 0;
+      }
+
+      h3 {
+        font-weight: normal;
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 0.5ex;
+      }
+
+      a {
+        text-decoration: none;
+        color: #567e25;
+      }
+
+      table {
+        width: 100%;
+        font-size: 80%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        font-weight: 700;
+        background-color: #dcdcdc;
+      }
+
+      tbody tr:nth-child(even) {
+        background-color: #fbfbfb;
+      }
+
+      td {
+        border: 1px solid #ccc;
+        padding: 0.5ex 2ex;
+      }
+
+      td p {
+        text-indent: 1em;
+        margin: 0;
+      }
+
+      td p:nth-child(1) {
+        text-indent: 0; /* No indent on first p in td */
+      }
+
+      /* Table of attributes */
+      .attribute-table td:nth-child(1) { /* Attribute */
+        width: 25%;
+      }
+      .attribute-table td:nth-child(2) { /* Type */
+        width: 25%;
+      }
+      .attribute-table td:nth-child(3) { /* Description */
+        width: auto;
+      }
+
+      /* Table of enum values. */
+      .enum-table td:nth-child(1) { /* Name */
+        width: 25%;
+      }
+      .enum-table td:nth-child(2) { /* Description */
+        width: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    {{#files}}
+
+    {{#file_messages}}
+    <h3 id="{{message_full_name}}">{{message_long_name}}</h3>
+    {{#p}}{{message_description}}{{/p}}
+    {{#message_has_fields}}
+    <table class="attribute-table">
+      <thead>
+        <tr><td>Attribute</td><td>Type</td><td>Description</td></tr>
+      </thead>
+      <tbody>
+        {{#message_fields}}
+        {{#field_description}}
+        <tr>
+          <td>{{field_name}}</td>
+          <td><a href="#{{field_type}}">{{field_type}}</a></td>
+          <td>{{#p}}{{field_description}}{{/p}}</td>
+        </tr>
+        {{/field_description}}
+        {{/message_fields}}
+      </tbody>
+    </table>
+    {{/message_has_fields}}
+    {{/file_messages}}
+
+    {{#file_enums}}
+    <h3 id="enum+{{enum_name}}">{{enum_name}}</h3>
+    {{#p}}{{enum_description}}{{/p}}
+    <table class="enum-table">
+      <thead>
+        <tr><td>Name</td><td>Description</td></tr>
+      </thead>
+      <tbody>
+        {{#enum_values}}
+        {{#value_description}}
+        <tr>
+          <td>{{value_name}}</td>
+          <td>{{#p}}{{value_description}}{{/p}}</td>
+        </tr>
+        {{/value_description}}
+        {{/enum_values}}
+      </tbody>
+    </table>
+    {{/file_enums}}
+
+    {{/files}}
+  </body>
+</html>
