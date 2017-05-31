@@ -1,41 +1,112 @@
 <!-- DO NOT EDIT -->
 <!-- This file automatically generated -->
+<html>
+<head>
+<style type="text/css">
+.types {
+	width: 100%;
+	margin-bottom: 24px;
+}
+
+.types td {
+	padding: 0px;
+}
+
+.types .typename {
+	font-weight: bold;
+	font-size: 1.5em;
+}
+
+.types .typedesc {
+	font-style: italic;
+	margin-left: 8px;
+}
+
+.field:nth-child(odd) {
+	background-color: #eee;
+}
+
+.types .field td {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+.types th.fieldname {
+	width: 25%;
+	white-space: nowrap;
+}
+
+.types th.fieldtype {
+	width: 25%;
+	white-space: nowrap;
+}
+
+.types th.fielddesc {
+	width: 50%;
+}
+
+.constant th.fieldname {
+	width: 20%;
+}
+
+.constant th.fieldtype {
+	width: 20%;
+}
+
+.constant th.fielddesc {
+	width: 60%;
+}
+
+.enum th.fieldname {
+	width: 25%;
+}
+
+.enum th.fielddesc {
+	width: 75%;
+}
+
+.variable td.fielddesc {
+	padding-bottom: 12px;
+}
+
+.variable th.fieldtype {
+	width: 75%;
+}
+
+.aggregator th.fieldtype {
+	width: 75%;
+}
+
+.types .fieldname {
+	font-weight: bold;
+}
+
+.types .fieldtype {
+	font-family: courier new;
+}
+
+</style>
+</head>
+<body>
 {{#files}}
 {{#file_messages}}
-<h3 id="{{message_name}}">{{message_name}}</h3>
-{{#p}}{{message_description}}{{/p}}
-{{#message_has_fields}}
-<table class="attribute-table">
-  <thead>
-    <tr><td>Attribute</td><td>Type</td><td>Description</td></tr>
-  </thead>
-  <tbody>
+<table id="{{message_name}}" class="types">
+    <tr><td colspan="3"><span class="typename">{{message_name}}</span> <span class="typedesc">{{message_description}}</span></td></tr>
+    <tr><th class="fieldname">Attribute</th><th class="fieldtype">Type</th><th class="fielddesc">Description</th></tr>
     {{#message_fields}}
-    <tr>
-      <td>{{field_name}}</td>
-      <td>{{{field_type}}}</td>
-      <td>{{#p}}{{field_description}}{{/p}}</td>
-    </tr>
+    <tr class="field"><td class="fieldname">{{field_name}}</td><td class="fieldtype">{{{field_type}}}</td><td class="fielddesc">{{field_description}}</td></tr>
     {{/message_fields}}
-  </tbody>
 </table>
-{{/message_has_fields}}
 {{/file_messages}}
 {{#file_enums}}
-<h3 id="{{enum_name}}">enum {{enum_name}}</h3>
-{{#p}}{{enum_description}}{{/p}}
-<table class="enum-table">
-  <thead>
-    <tr><td>Name</td><td>Description</td></tr>
-  </thead>
-  <tbody>
+<table id="{{enum_name}}" class="types enum">
+    <tr><td colspan="2"><span class="typename">enum {{enum_name}}</span> <span class="typedesc">{{enum_description}}</span></td></tr>
+    <tr><th class="fieldname">Attribute</th><th class="fielddesc">Description</th></tr>
     {{#enum_values}}
-    <tr>
-      <td>{{value_name}}</td>
-      <td>{{#p}}{{value_description}}{{/p}}</td>
-    </tr>
+    <tr class="field"><td class="fieldname">{{value_name}}</td><td class="fielddesc">{{value_description}}</td></tr>
     {{/enum_values}}
-  </tbody>
 </table>
 {{/file_enums}}
 {{/files}}
+</body>
+</html>
