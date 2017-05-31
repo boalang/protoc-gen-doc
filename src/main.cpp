@@ -219,7 +219,7 @@ static QString scalarTypeName(gp::FieldDescriptor::Type type)
 
 static QString typeUrl(QString type)
 {
-    return "<a href=\"/docs/dsl-types.php#" + type + "\">" + type + "</a>";
+    return "<a href=\"#" + type + "\">" + type + "</a>";
 }
 
 /**
